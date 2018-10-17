@@ -3,6 +3,9 @@ import sys, os, socket
 import params, time
 from threading import Thread
 from framedSock import FramedStreamSock
+import threading
+
+Lock = threading.Lock()
 
 switchesVarDefaults = (
     (('-l', '--listenPort') ,'listenPort', 50001),
@@ -36,6 +39,8 @@ class ServerThread(Thread):
 
             msg = msg.decode()
 
+            Lock.acquire()  # makes sure only one thread is running
+
             oFile = open(msg,"wb+")
 
             while True:
@@ -46,6 +51,7 @@ class ServerThread(Thread):
                     return
                 if b'%%e' in msg:
                     oFile.close()
+                    Lock.release()
                     return
 
                 oFile.write(msg)
